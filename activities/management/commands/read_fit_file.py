@@ -12,8 +12,9 @@ class Command(BaseCommand):
         parser.add_argument('folder', nargs=1, type=str)
 
     def handle(self, *args, **options):
-        pathlist = Path(options['folder'][0]).glob('*.fit')
-        for path in pathlist:
+        path_list = Path(options['folder'][0]).glob('*.fit')
+        for path in sorted(path_list):
+            print(str(path))
             activity = strip_units(convert(str(path)))
             laps = activity['laps']
             data = activity['data']
@@ -22,12 +23,16 @@ class Command(BaseCommand):
             try:
                 a = Activity.objects.create(**activity)
                 ln = 1
+                django_laps = []
+                django_data_points = []
                 for lap in laps:
                     lap['activity'] = a
-                    Lap.objects.create(lap_nr=ln, **lap)
+                    django_laps.append(Lap(lap_nr=ln, **lap))
                     ln += 1
+                Lap.objects.bulk_create(django_laps)
                 for datum in data:
                     datum['activity'] = a
-                    DataPoint.objects.create(**datum)
+                    django_data_points.append(DataPoint(**datum))
+                DataPoint.objects.bulk_create(django_data_points)
             except IntegrityError:
                 print('{} already exists.'.format(activity['timestamp']))

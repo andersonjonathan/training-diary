@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from datetime import timedelta
 from fitparse import FitFile
+import pytz
 
 MAX_HEART_RATE = 190
 
@@ -18,8 +19,7 @@ def m_per_s_to_min_per_km(mps):
 
 
 def get_structured_activity(fitfile):
-    sn = list(fitfile.get_messages("device_info"))[0].as_dict()['fields'][1]
-    print(sn)
+    sn = list(fitfile.get_messages("file_id"))[0].as_dict()['fields'][0]
     raw_session = list(fitfile.get_messages("session"))[0].as_dict()['fields']
     session_fields = [
         "timestamp",
@@ -117,6 +117,30 @@ def get_structured_activity(fitfile):
         records.append(point)
 
     session['data'] = records
+
+    # Make time fields timezone aware
+    time_fields = [
+        "timestamp",
+        "start_time",
+        "end_time",
+    ]
+    for f in time_fields:
+        try:
+            session[f]['value'] = session[f]['value'].replace(tzinfo=pytz.utc)
+        except KeyError:
+            pass
+    for lap in session['laps']:
+        for f in time_fields:
+            try:
+                lap[f]['value'] = lap[f]['value'].replace(tzinfo=pytz.utc)
+            except KeyError:
+                pass
+    for data in session['data']:
+        for f in time_fields:
+            try:
+                data[f]['value'] = data[f]['value'].replace(tzinfo=pytz.utc)
+            except KeyError:
+                pass
     return session
 
 
@@ -193,13 +217,3 @@ def strip_units(activity):
     for data in activity['data']:
         new_activity['data'].append({k: v['value'] for k, v in data.items()})
     return new_activity
-
-
-if __name__ == "__main__":
-    from argparse import ArgumentParser
-    parser = ArgumentParser()
-    parser.add_argument("-f", "--file", dest="file",
-                        help="read from FILE", metavar="FILE")
-
-    args = parser.parse_args()
-    convert(args.file)
