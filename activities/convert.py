@@ -185,11 +185,13 @@ def clean_data(activity):
             pass
         except TypeError:
             pass
+        max_heart_rate_lap = 0
         sum_heart_rate_lap = 0
         heart_rate_count_lap = 0
         for d in l["activities"]["value"]:
             try:
                 if d['heart_rate']['value']:
+                    max_heart_rate_lap = max(max_heart_rate_lap, d['heart_rate']['value'])
                     sum_heart_rate_lap += d['heart_rate']['value']
                     heart_rate_count_lap += 1
             except KeyError:
@@ -197,6 +199,7 @@ def clean_data(activity):
         del l["activities"]
         try:
             l['avg_heart_rate'] = {"unit": "bmp", "value": round(sum_heart_rate_lap / heart_rate_count_lap, 0)}
+            l['max_heart_rate'] = {"unit": "bmp", "value": max_heart_rate_lap}
         except ZeroDivisionError:
             l['avg_heart_rate'] = {"unit": "bmp", "value": 0}
 

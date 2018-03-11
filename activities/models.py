@@ -1,4 +1,14 @@
+from django.contrib.auth.models import User
 from django.db import models
+from django.urls import reverse
+
+
+def format_speed(speed):
+    return "{}:{:02.0f}".format(int(speed), (speed-int(speed))*60)
+
+
+def format_time(time):
+    return "{}:{:02.0f}".format(int(time/60), time - int(time/60)*60)
 
 
 class Activity(models.Model):
@@ -21,12 +31,30 @@ class Activity(models.Model):
     total_distance = models.FloatField(help_text="m", blank=True, null=True)
     total_elapsed_time = models.FloatField(help_text="s")
     total_timer_time = models.FloatField(help_text="s")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = (('serial_number', 'timestamp'),)
+        unique_together = (('serial_number', 'timestamp', 'user'),)
+        ordering = ("-start_time",)
 
     def __str__(self):
         return "{} {}".format(self.pk, self.start_time)
+
+    def formatted_distance(self):
+        km = self.total_distance/1000
+        return "{0:.2f} km".format(km) if km else "No GPS"
+
+    def formatted_avg_speed(self):
+        return format_speed(self.avg_speed)
+
+    def formatted_max_speed(self):
+        return format_speed(self.max_speed)
+
+    def formatted_total_time(self):
+        return format_time(self.total_timer_time)
+
+    def get_absolute_url(self):
+        return reverse('activity', args=[str(self.id)])
 
 
 class Lap(models.Model):
@@ -53,8 +81,28 @@ class Lap(models.Model):
     total_elapsed_time = models.FloatField(help_text="s", blank=True, null=True)
     total_timer_time = models.FloatField(help_text="s", blank=True, null=True)
 
+    class Meta:
+        ordering = ("activity", "lap_nr",)
+
     def __str__(self):
         return "{} {} {}".format(self.activity_id, self.lap_nr, self.start_time)
+
+    def formatted_distance(self):
+        km = self.total_distance/1000
+        return "{0:.2f} km".format(km) if km else "No GPS"
+
+    def formatted_avg_speed(self):
+        return format_speed(self.avg_speed)
+
+    def formatted_max_speed(self):
+        return format_speed(self.max_speed)
+
+    def formatted_total_time(self):
+        return format_time(self.total_timer_time)
+
+    def lap_time_start(self):
+        activity_start = self.start_time - self.activity.start_time
+        return format_time(activity_start.seconds)
 
 
 class DataPoint(models.Model):
@@ -66,6 +114,9 @@ class DataPoint(models.Model):
     position_long = models.FloatField(help_text="deg", blank=True, null=True)
     speed = models.FloatField(help_text="min/km", blank=True, null=True)
     timestamp = models.DateTimeField()
+
+    class Meta:
+        ordering = ("timestamp",)
 
     def __str__(self):
         return "{} {}".format(self.activity_id, self.timestamp)

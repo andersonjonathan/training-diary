@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from activities.convert import convert, strip_units
 from activities.models import Activity, Lap, DataPoint
@@ -10,8 +11,14 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('folder', nargs=1, type=str)
+        parser.add_argument('username', nargs=1, type=str)
 
     def handle(self, *args, **options):
+        try:
+            user = User.objects.get(username=options['username'][0])
+        except User.DoesNotExist:
+            print("User not found")
+            return
         path_list = Path(options['folder'][0]).glob('*.fit')
         for path in sorted(path_list):
             print(str(path))
@@ -21,7 +28,7 @@ class Command(BaseCommand):
             del activity['laps']
             del activity['data']
             try:
-                a = Activity.objects.create(**activity)
+                a = Activity.objects.create(**activity, user=user)
                 ln = 1
                 django_laps = []
                 django_data_points = []
