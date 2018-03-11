@@ -1,0 +1,16 @@
+{% extends 'common/master.html' %}
+
+{% block content %}
+    <div class="card maxh-100">
+        <div class="card-body">
+            <h5 class="card-title">Activities</h5>
+            <div class="list-group list-group-condensed">
+                {% for activity in activities %}
+                    <a href="{{ activity.get_absolute_url }}" class="list-group-item list-group-item-action">
+                        {{ activity.start_time|date:'Y-m-d H:i' }} {{ activity.sport }} {{ activity.formatted_distance }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

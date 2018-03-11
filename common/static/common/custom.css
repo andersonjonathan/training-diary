@@ -1,0 +1,8 @@
+.list-group-condensed > .list-group-item {
+    padding: 5px 10px
+}
+
+.maxh-100 {
+    max-height: 87vh;
+    overflow-y: auto;
+}

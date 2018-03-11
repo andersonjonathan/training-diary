@@ -136,3 +136,4 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
+/training/secrets.py

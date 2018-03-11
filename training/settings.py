@@ -24,7 +24,7 @@ SECRET_KEY = 'w81-&o9d+kg897rq&$rb^95rn6phx9fbr5rhk0^48by4^7gwx('
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
+from .secrets import GOOGLE_API_KEY
 ALLOWED_HOSTS = []
 
 
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'common',
     'activities'
 ]
 
