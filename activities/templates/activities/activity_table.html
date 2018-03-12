@@ -1,0 +1,30 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Time</th>
+            {% if activity.total_distance %}<th>Distance</th>{% endif %}
+            <th>Laps</th>
+            {% if activity.avg_heart_rate %}<th>Avg HR</th>{% endif %}
+            {% if activity.max_heart_rate %}<th>Max HR</th>{% endif %}
+            {% if activity.total_distance %}<th>Avg speed</th>
+            <th>Max speed</th>
+            <th>Ascent</th>
+            <th>Descent</th>{% endif %}
+            <th>Calories</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ activity.formatted_total_time }}</td>
+            {% if activity.total_distance %}<td>{{ activity.formatted_distance }}</td>{% endif %}
+            <td>{{ activity.num_laps }}</td>
+            {% if activity.avg_heart_rate %}<td>{{ activity.avg_heart_rate|floatformat:"0" }} BMP</td>{% endif %}
+            {% if activity.max_heart_rate %}<td>{{ activity.max_heart_rate|floatformat:"0" }} BMP</td>{% endif %}
+            {% if activity.total_distance %}<td>{{ activity.formatted_avg_speed }} min/km</td>
+            <td>{{ activity.formatted_max_speed }} min/km</td>
+            <td>{{ activity.total_ascent }} m</td>
+            <td>{{ activity.total_descent }} m</td>{% endif %}
+            <td>{{ activity.total_calories }} kcal</td>
+        </tr>
+    </tbody>
+</table>

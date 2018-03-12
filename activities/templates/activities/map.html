@@ -1,0 +1,96 @@
+<div id="gmap" style="height: 500px; width: 100%"></div>
+<script>
+    function initMap() {
+        var map = new google.maps.Map(document.getElementById('gmap'), {
+            zoom: 13,
+            {% if activity.start_position_lat and activity.start_position_long %}
+                center: {lat: {{ activity.start_position_lat }}, lng: {{ activity.start_position_long }}},
+            {% else %}
+                center: {lat: 58.4, lng: 15.5},
+            {% endif %}
+            mapTypeId: 'terrain'
+        });
+
+        var activityCoordinates = [{% for data in activity.data.all %}
+            {% if data.position_lat and data.position_long %}
+                {lat: {{ data.position_lat }}, lng: {{ data.position_long }}},
+            {% endif %}
+        {% endfor %}];
+        var activity = new google.maps.Polyline({
+            path: activityCoordinates,
+            geodesic: true,
+            strokeColor: '#FF0000',
+            strokeOpacity: 1.0,
+            strokeWeight: 2
+        });
+
+        activity.setMap(map);
+        {% if activity.start_position_lat and activity.start_position_long %}
+            new google.maps.Marker({
+                position: {lat: {{activity.start_position_lat}}, lng: {{activity.start_position_long}}},
+                label: "S",
+                map: map
+            });
+        {% endif %}
+        {% for lap in activity.laps.all %}
+            {% if lap.end_position_lat and lap.end_position_long %}
+                var infowindow_{{ lap.lap_nr }} = new google.maps.InfoWindow({
+                    content: '<div class="lap-content">' +
+                    '<h5>{{ lap.lap_nr }}</h1>' +
+                    '<div>' +
+                    '<table class="table table-sm"><thead><tr>' +
+                    '<th>Lap nr</th>' +
+                    '<th>Start time</th>' +
+                    '<th>Time</th>' +
+                    {% if activity.total_distance %}
+                        '<th>Distance</th>' +
+                    {% endif %}
+                    {% if activity.avg_heart_rate %}
+                        '<th>Avg HR</th>' +
+                        '<th>Max HR</th>' +
+                    {% endif %}
+                    {% if activity.total_distance %}
+                        '<th>Avg speed</th>' +
+                        '<th>Max speed</th>' +
+                        '<th>Ascent</th>' +
+                        '<th>Descent</th>' +
+                    {% endif %}
+                    '<th>Trigger</th>' +
+                    '<th>Calories</th>' +
+                    '</tr></thead>' +
+                    '<tbody><tr>' +
+                    '<td>{{ lap.lap_nr }}</td>' +
+                    '<td><span title="{{ lap.start_time|date:"H:i:s" }}">{{ lap.lap_time_start }}</span></td>' +
+                    '<td>{{ lap.formatted_total_time }}</td>' +
+                    {% if activity.total_distance %}
+                        '<td>{{ lap.formatted_distance }}</td>' +
+                    {% endif %}
+                    {% if activity.avg_heart_rate %}
+                        '<td>{{ lap.avg_heart_rate|floatformat:"0" }} BMP</td>'+
+                        '<td>{{ lap.max_heart_rate|floatformat:"0" }} BMP</td>'+
+                    {% endif %}
+                    {% if activity.total_distance %}
+                        '<td>{{ lap.formatted_avg_speed }} min/km</td>' +
+                        '<td>{{ lap.formatted_max_speed }} min/km</td>'+
+                        '<td>{{ lap.total_ascent }} m</td>'+
+                        '<td>{{ lap.total_descent }} m</td>'+
+                    {% endif %}
+                    '<td>{{ lap.lap_trigger }}</td>' +
+                    '<td>{{ lap.total_calories }} kcal</td>' +
+                    '</tr></tbody></table>' +
+                    '</div>' +
+                    '</div>'
+                });
+                var marker_{{ lap.lap_nr }} = new google.maps.Marker({
+                    position: {lat: {{lap.end_position_lat}}, lng: {{lap.end_position_long}}},
+                    label: "{{ lap.lap_nr }}",
+                    map: map
+                });
+                marker_{{ lap.lap_nr }}.addListener('click', function () {
+                    infowindow_{{ lap.lap_nr }}.open(map, marker_{{ lap.lap_nr }});
+                });
+            {% endif %}
+        {% endfor %}
+    }
+</script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}&callback=initMap"></script>

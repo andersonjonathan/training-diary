@@ -1,0 +1,36 @@
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th>Lap nr</th>
+            <th>Start time</th>
+            <th>Time</th>
+            {% if activity.total_distance %}<th>Distance</th>{% endif %}
+            {% if activity.avg_heart_rate %}<th>Avg HR</th>
+            <th>Max HR</th>{% endif %}
+            {% if activity.total_distance %}<th>Avg speed</th>
+            <th>Max speed</th>
+            <th>Ascent</th>
+            <th>Descent</th>{% endif %}
+            <th>Trigger</th>
+            <th>Calories</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for lap in activity.laps.all %}
+            <tr>
+                <td>{{ lap.lap_nr }}</td>
+                <td><span title="{{ lap.start_time|date:'H:i:s' }}">{{ lap.lap_time_start }}</span></td>
+                <td>{{ lap.formatted_total_time }}</td>
+                {% if activity.total_distance %}<td>{{ lap.formatted_distance }}</td>{% endif %}
+                {% if activity.avg_heart_rate %}<td>{{ lap.avg_heart_rate|floatformat:"0" }} BMP</td>
+                <td>{{ lap.max_heart_rate|floatformat:"0" }} BMP</td>{% endif %}
+                {% if activity.total_distance %}<td>{{ lap.formatted_avg_speed }} min/km</td>
+                <td>{{ lap.formatted_max_speed }} min/km</td>
+                <td>{{ lap.total_ascent }} m</td>
+                <td>{{ lap.total_descent }} m</td>{% endif %}
+                <td>{{ lap.lap_trigger }}</td>
+                <td>{{ lap.total_calories }} kcal</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

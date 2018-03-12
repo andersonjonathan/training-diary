@@ -1,0 +1,110 @@
+<canvas id="speed_chart" style="width: 100%; height: 500px"></canvas>
+<script>
+    $(document).ready(function () {
+        var start_time = new Date("{{ activity.start_time|date:"c" }}");
+        var now = new Date();
+        var palette = new DistinctColors({count: {{ activity.num_laps }}});
+        var ctx = document.getElementById("speed_chart");
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [
+                    {% for data in activity.data.all %}
+                        {% if data.speed %}
+                            new Date("{{ data.timestamp|date:"c" }}") - start_time + (now.getTimezoneOffset() * 60000),
+                        {% endif %}
+                    {% endfor %}],
+                datasets: [
+                    {
+                        label: 'Speed',
+                        data: [
+                            {% for data in activity.data.all %}
+                                {% if data.speed %}
+                                    60/{{ data.speed }},
+                                {% endif %}
+                            {% endfor %}],
+                        fill: false,
+                        lineTension: 0.1,
+                        borderCapStyle: 'butt',
+                        borderDash: [],
+                        borderDashOffset: 0.0,
+                        pointBackgroundColor: '#fff',
+                        pointBorderWidth: 1,
+                        pointHoverRadius: 5,
+                        pointHoverBorderColor: 'rgba(220,220,220,1)',
+                        pointHoverBorderWidth: 2,
+                        pointRadius: 1,
+                        pointHitRadius: 10,
+                        pointBorderColor: palette[0],
+                        pointHoverBackgroundColor: palette[0],
+                        backgroundColor: palette[0],
+                        borderColor: palette[0]
+                    },
+{#                    {% for lap in activity.laps.all %}#}
+{#                        {#}
+{#                            label: 'Lap {{ lap.lap_nr }}',#}
+{#                            data: [#}
+{#                                {% for data in activity.data.all %}#}
+{#                                    {% if data.speed and data.timestamp >= lap.start_time and data.timestamp <= lap.end_time %}#}
+{#                                        60/{{ data.speed }},#}
+{#                                    {% elif data.speed %}#}
+{#                                        undefined,#}
+{#                                    {% endif %}#}
+{#                                {% endfor %}],#}
+{#                            fill: false,#}
+{#                            lineTension: 0.1,#}
+{#                            borderCapStyle: 'butt',#}
+{#                            borderDash: [],#}
+{#                            borderDashOffset: 0.0,#}
+{#                            pointBackgroundColor: '#fff',#}
+{#                            pointBorderWidth: 1,#}
+{#                            pointHoverRadius: 5,#}
+{#                            pointHoverBorderColor: 'rgba(220,220,220,1)',#}
+{#                            pointHoverBorderWidth: 2,#}
+{#                            pointRadius: 1,#}
+{#                            pointHitRadius: 10,#}
+{#                            pointBorderColor: palette[{{ lap.lap_nr }}],#}
+{#                            pointHoverBackgroundColor: palette[{{ lap.lap_nr }}],#}
+{#                            backgroundColor: palette[{{ lap.lap_nr }}],#}
+{#                            borderColor: palette[{{ lap.lap_nr }}]#}
+{#                        },#}
+{#                    {% endfor %}#}
+                ]
+            },
+            options: {
+                scales: {
+                    xAxes: [{
+                        type: 'time',
+                        time: {
+                            tooltipFormat: 'HH:mm:ss',
+                            displayFormats: {
+                                millisecond: 'HH:mm:ss.SSS',
+                                second: 'HH:mm:ss',
+                                minute: 'HH:mm',
+                                hour: 'HH'
+                            }
+                        },
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 80,
+                            minRotation: 80
+                        }
+                    }]
+                },
+                pan: {
+                    enabled: true,
+                    mode: 'x'
+                },
+                zoom: {
+                    enabled: true,
+                    drag: false,
+                    mode: 'x',
+                    limits: {
+                        max: 10,
+                        min: 0.5
+                    }
+                }
+            }
+        });
+    });
+</script>
